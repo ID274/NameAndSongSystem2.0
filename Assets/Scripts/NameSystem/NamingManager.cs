@@ -19,8 +19,8 @@ public class NamingManager : MonoBehaviour
 {
     static public NamingManager Instance { get; private set; }
 
-    [Header("Full Names Dictionary\n-This dictionary is used to store the full names of vikings. \n-It is used to prevent duplicate names.\n\n=== DO NOT MODIFY THE DICTIONARY VIA INSPECTOR ===")]
-    [SerializeField] private Dictionary<string, bool> fullnameRecord = new Dictionary<string, bool>();
+    // This dictionary is used to sstore the full names of vikings and prevent duplicate names.
+    private Dictionary<string, bool> fullnameRecord = new Dictionary<string, bool>();
 
     [Header("Name and Title Lists\n-These lists are populated from the text files. \n-They are used to assign names and titles to vikings.\n\n=== DO NOT MODIFY THESE LISTS VIA INSPECTOR === \n-Use the text files instead.")]
     [SerializeField] private List<string> maleNames = new List<string>();
