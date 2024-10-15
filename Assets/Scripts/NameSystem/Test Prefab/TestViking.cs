@@ -3,8 +3,7 @@
  * License : CC BY 4.0 https://creativecommons.org/licenses/by/4.0/
  * Purpose : This script is a test script used to demonstrate the naming system in action.
  *           It stores the viking's name as a tuple and extracts the first and last names from it, allowing use of multiple types.
- *           To use this script, attach it to a GameObject in the scene and assign the isMale, and isChild variables in the inspector.
- *            
+ *           To use this script, attach it to a GameObject in the scene and assign the isMale, and isChild variables in the inspector.       
  */
 
 using TMPro;

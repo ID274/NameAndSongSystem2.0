@@ -20,7 +20,7 @@ public class NamingManager : MonoBehaviour
     static public NamingManager Instance { get; private set; }
 
     [Header("Full Names Dictionary\n-This dictionary is used to store the full names of vikings. \n-It is used to prevent duplicate names.\n\n=== DO NOT MODIFY THE DICTIONARY VIA INSPECTOR ===")]
-    [SerializeField] private Dictionary<string, string> fullnameRecord = new Dictionary<string, string>();
+    [SerializeField] private Dictionary<string, bool> fullnameRecord = new Dictionary<string, bool>();
 
     [Header("Name and Title Lists\n-These lists are populated from the text files. \n-They are used to assign names and titles to vikings.\n\n=== DO NOT MODIFY THESE LISTS VIA INSPECTOR === \n-Use the text files instead.")]
     [SerializeField] private List<string> maleNames = new List<string>();
@@ -62,6 +62,7 @@ public class NamingManager : MonoBehaviour
 
         VerifyTextFiles();
         LoadTextFiles();
+        TestDuplicateNames();
     }
 
     void VerifyTextFiles() // <--- This method creates text files if they do not exist. If missing, default names are used.
@@ -108,57 +109,54 @@ public class NamingManager : MonoBehaviour
         return chosenName;
     }// <--- Use this one for all vikings/children. This method will assign a first name to a viking.
 
-    //public string ChooseLastName(bool isMale) //  <--- Use this one for assigning names for starting vikings (parentless). This method will assign a last name to a viking.
-    //{
-    //    string chosenName = "";
-    //    switch (isMale)
-    //    {
-    //        case true:
-    //            chosenName = maleNames[Random.Range(0, maleNames.Count)] + "";
-    //            break;
-    //        case false:
-    //            chosenName = femaleNames[Random.Range(0, femaleNames.Count)];
-    //            break;
-    //    }
-    //    string surname = PatronymicSurname(chosenName, isMale);
-
-    //    return surname;
-    //}
-
     public string ChooseLastName(bool isMale, bool isChild) //  <--- isChild logic not implemented yet.
     {
         string chosenName = "";
+        string surname = "";
         if (isChild)
         {
             //- Add logic for child last names. These should be based on the parents' last names.
+            //- NOT YET IMPLEMENTED
+            switch (isMale)
+            {
+                case true:
+                    chosenName = maleNames[Random.Range(0, maleNames.Count)];
+                    break;
+                case false:
+                    chosenName = femaleNames[Random.Range(0, femaleNames.Count)];
+                    break;
+            }
+            surname = PatronymicSurname(chosenName, isMale);
         }
-        switch (isMale)
+        else
         {
-            case true:
-                chosenName = maleNames[Random.Range(0, maleNames.Count)];
-                break;
-            case false:
-                chosenName = femaleNames[Random.Range(0, femaleNames.Count)];
-                break;
+            switch (isMale)
+            {
+                case true:
+                    chosenName = maleNames[Random.Range(0, maleNames.Count)];
+                    break;
+                case false:
+                    chosenName = femaleNames[Random.Range(0, femaleNames.Count)];
+                    break;
+            }
+            surname = chosenName;
         }
-        string surname = PatronymicSurname(chosenName, isMale);
 
         return surname;
     }
 
     private string PatronymicSurname(string surname, bool isMale)
     {
-        //- This method creates a patronymic surname based on the name of the father.
         //- The implementation should take into account genitive form, and the suffixes -son (son) and -dottir (daughter).
 
         // NOT YET IMPLEMENTED, REQUIRES FURTHER RESEARCH INTO NAMING CONVENTIONS
 
-        string nameSuffix = ""; // Placeholder
-        
+        string nameSuffix = "SUFFIX"; // Placeholder
+
         string finalSurname = surname + nameSuffix;
 
         return finalSurname;
-    }
+    } // <--- This method creates a patronymic surname based on the name of the father.
 
     private (string, string) RecordFullName(bool isMale, bool isChild, string firstName, string lastName) // <--- This method records the full name of a viking and returns it as a tuple (string, string).
     {
@@ -166,59 +164,46 @@ public class NamingManager : MonoBehaviour
         while (true)
         {
             counter++;
-            if (counter > 100)
+            if (counter > 30)
             {
                 Debug.LogError("Error: Unable to record full name. Dictionary length might be too low or available names exhausted.");
                 return ("", ""); // <--- Ensure a return value here
             }
 
+            string fullName = firstName + " " + lastName;
+
             if (counter > 1) // <--- This will reroll the first name if it is a duplicate.
             {
                 firstName = ChooseFirstName(isMale); // <--- Choose a new first name and then check it against the same surname.
+                fullName = firstName + " " + lastName;
 
-                if (fullnameRecord.TryGetValue(firstName, out string existingLastNameRerolled))
+                if (fullnameRecord.ContainsKey(fullName))
                 {
-                    if (existingLastNameRerolled == lastName)
-                    {
-                        continue;
-                    }
-                    else
-                    {
-                        break;
-                    }
+                    continue;
                 }
                 else
                 {
-                    fullnameRecord.Add(firstName, lastName);
-                    (string, string) fullName = (firstName, lastName); // <--- This will store the full name in a tuple.
-                    Debug.Log($"Full name recorded: {fullName.ToString()}."); // <--- This will print the full name of the viking to the console.
-                    return fullName;
+                    fullnameRecord.Add(fullName, true);
+                    (string, string) nameTuple = (firstName, lastName); // <--- This will store the full name in a tuple.
+                    Debug.Log($"Full name recorded: {nameTuple.ToString()}."); // <--- This will print the full name of the viking to the console.
+                    return nameTuple;
                 }
             }
-
             else
             {
-                if (fullnameRecord.TryGetValue(firstName, out string existingLastName))
+                if (fullnameRecord.ContainsKey(fullName))
                 {
-                    if (existingLastName == lastName)
-                    {
-                        continue;
-                    }
-                    else
-                    {
-                        break;
-                    }
+                    continue;
                 }
                 else
                 {
-                    fullnameRecord.Add(firstName, lastName);
-                    (string, string) fullName = (firstName, lastName); // <--- This will store the full name in a tuple.
-                    Debug.Log($"Full name recorded: {fullName.ToString()}."); // <--- This will print the full name of the viking to the console.
-                    return fullName;
+                    fullnameRecord.Add(fullName, true);
+                    (string, string) nameTuple = (firstName, lastName); // <--- This will store the full name in a tuple.
+                    Debug.Log($"Full name recorded: {nameTuple.ToString()}."); // <--- This will print the full name of the viking to the console.
+                    return nameTuple;
                 }
             }
         }
-        return ("", ""); // <--- Ensure a return value here
     }
 
     public (string, string) GetFullNameQuickly(bool isMale, bool isChild) // <--- This method is used to get a full name quickly. It returns a tuple (string, string).
@@ -228,5 +213,28 @@ public class NamingManager : MonoBehaviour
         (string, string) fullName = RecordFullName(isMale, isChild, firstName, lastName);
         Debug.Log($"Full name: {fullName.ToString()}.");
         return fullName;
+    }
+
+    public void TestDuplicateNames() // <--- This method is used to test the naming system with duplicate names.
+    {
+        // Test with a set of duplicate names
+        string firstName = "John";
+        string lastName = "Doe";
+
+        // First attempt to add the name
+        var result1 = RecordFullName(true, false, firstName, lastName);
+        Debug.Log($"- First attempt: {result1}");
+
+        // Second attempt to add the same name
+        var result2 = RecordFullName(true, false, firstName, lastName);
+        Debug.Log($"- Second attempt: {result2}");
+
+        // Third attempt with a different first name but same last name
+        var result3 = RecordFullName(true, false, "Jane", lastName);
+        Debug.Log($"- Third attempt: {result3}");
+
+        // Clear the records after testing
+        fullnameRecord.Clear();
+        Debug.Log("Full name records cleared after testing.");
     }
 }
